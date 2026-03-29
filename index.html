@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$VICE — Miami 1980</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=VT323&family=Rajdhani:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink: #FF2D78;
+  --cyan: #00F5FF;
+  --purple: #9B00FF;
+  --yellow: #FFE600;
+  --dark: #06000F;
+  --darker: #03000A;
+  --pink-glow: 0 0 20px #FF2D78, 0 0 40px rgba(255,45,120,0.4);
+  --cyan-glow: 0 0 20px #00F5FF, 0 0 40px rgba(0,245,255,0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--darker);
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CURSOR */
+.cursor {
+  width: 20px; height: 20px;
+  border: 1px solid var(--pink);
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  transition: transform 0.1s;
+  box-shadow: var(--pink-glow);
+}
+.cursor-trail {
+  width: 4px; height: 4px;
+  background: var(--cyan);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 99998;
+  box-shadow: var(--cyan-glow);
+}
+
+/* BG CANVAS */
+#bg { position: fixed; top:0;left:0;width:100%;height:100%;z-index:0; }
+
+/* SCANLINES */
+.scanlines {
+  position: fixed; top:0;left:0;right:0;bottom:0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 6;
+  animation: scanline-flicker 8s ease-in-out infinite;
+}
+
+@keyframes scanline-flicker {
+  0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.7} 94%{opacity:1} 97%{opacity:0.8} 98%{opacity:1}
+}
+
+/* VHS NOISE */
+.vhs-noise {
+  position: fixed; top:0;left:0;right:0;bottom:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.4;
+}
+
+/* TICKER */
+.ticker {
+  position: fixed; top:0;left:0;right:0;
+  height: 32px;
+  background: var(--pink);
+  overflow: hidden;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 20px rgba(255,45,120,0.6);
+}
+.ticker-track {
+  display: flex;
+  animation: tick 30s linear infinite;
+  white-space: nowrap;
+}
+.ticker-item {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: #000;
+  padding: 0 40px;
+  letter-spacing: 2px;
+}
+@keyframes tick {
+  0%{transform:translateX(0)} 100%{transform:translateX(-50%)}
+}
+
+/* HERO */
+.hero {
+  position: relative; z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px 60px;
+  text-align: center;
+}
+
+/* VHS LABEL */
+.vhs-label {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: var(--cyan);
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-shadow: var(--cyan-glow);
+  animation: vhs-glitch 6s ease-in-out infinite;
+}
+
+@keyframes vhs-glitch {
+  0%,90%,100%{transform:none;opacity:1}
+  91%{transform:skewX(10deg);opacity:0.8}
+  92%{transform:none;opacity:1}
+  95%{transform:skewX(-5deg) translateX(3px);opacity:0.7}
+  96%{transform:none;opacity:1}
+}
+
+/* PINK SQUARE LOGO */
+.logo-wrap {
+  position: relative;
+  margin: 0 auto 40px;
+  width: 160px; height: 160px;
+}
+
+.pink-square {
+  width: 160px; height: 160px;
+  background: var(--pink);
+  box-shadow: var(--pink-glow), inset 0 0 40px rgba(255,255,255,0.1);
+  animation: square-pulse 4s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.pink-square::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, var(--pink), var(--cyan), var(--purple), var(--pink));
+  background-size: 300% 300%;
+  animation: border-rotate 3s linear infinite;
+  z-index: -1;
+}
+
+@keyframes border-rotate {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+@keyframes square-pulse {
+  0%,100%{box-shadow: var(--pink-glow)}
+  50%{box-shadow: 0 0 60px #FF2D78, 0 0 100px rgba(255,45,120,0.5), 0 0 140px rgba(155,0,255,0.2)}
+}
+
+.logo-orbit {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 220px; height: 220px;
+  border: 1px solid rgba(255,45,120,0.2);
+  animation: orbit-spin 15s linear infinite;
+}
+.logo-orbit::before {
+  content: '◆';
+  position: absolute;
+  top: -8px; left: 50%;
+  transform: translateX(-50%);
+  color: var(--pink);
+  font-size: 14px;
+  filter: drop-shadow(0 0 6px var(--pink));
+}
+
+.logo-orbit-2 {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 270px; height: 270px;
+  border: 1px solid rgba(0,245,255,0.1);
+  animation: orbit-spin 25s linear infinite reverse;
+}
+.logo-orbit-2::before {
+  content: '◆';
+  position: absolute;
+  top: -8px; left: 50%;
+  transform: translateX(-50%);
+  color: var(--cyan);
+  font-size: 10px;
+  filter: drop-shadow(0 0 6px var(--cyan));
+}
+
+@keyframes orbit-spin {
+  from{transform:translate(-50%,-50%) rotate(0deg)}
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+
+/* MAIN TITLE */
+.main-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 18vw, 180px);
+  line-height: 0.85;
+  letter-spacing: 8px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.main-title .line1 {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--pink);
+  text-shadow: none;
+  filter: drop-shadow(0 0 20px var(--pink));
+  animation: title-glitch 8s ease-in-out infinite;
+}
+
+.main-title .line2 {
+  display: block;
+  background: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink), var(--cyan));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s linear infinite;
+  filter: drop-shadow(0 0 30px var(--cyan));
+}
+
+@keyframes gradient-shift {
+  0%{background-position:0% 50%}
+  100%{background-position:300% 50%}
+}
+
+@keyframes title-glitch {
+  0%,88%,100%{transform:none;opacity:1}
+  89%{transform:translate(-3px,0) skewX(5deg);opacity:0.9}
+  90%{transform:translate(3px,0);opacity:1}
+  91%{transform:translate(-2px,0);opacity:0.8}
+  92%{transform:none;opacity:1}
+}
+
+.dollar {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(20px, 4vw, 40px);
+  color: var(--pink);
+  letter-spacing: 12px;
+  text-shadow: var(--pink-glow);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.year-tag {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: var(--cyan);
+  letter-spacing: 8px;
+  text-shadow: var(--cyan-glow);
+  margin-bottom: 40px;
+  opacity: 0.8;
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  gap: 0;
+  max-width: 650px;
+  width: 100%;
+  margin: 0 auto 30px;
+  border: 1px solid rgba(255,45,120,0.2);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+}
+
+.stat {
+  flex: 1;
+  padding: 16px 8px;
+  text-align: center;
+  border-right: 1px solid rgba(255,45,120,0.15);
+}
+.stat:last-child{border-right:none}
+
+.stat-val {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  color: var(--pink);
+  text-shadow: var(--pink-glow);
+}
+
+.stat-val.cyan {
+  color: var(--cyan);
+  text-shadow: var(--cyan-glow);
+}
+
+.live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff88;
+  animation: blink 1s infinite;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.stat-lbl {
+  font-size: 8px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* BUY BTN */
+.buy-wrap { text-align: center; margin: 20px 0; }
+
+.buy-btn {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(20px, 3vw, 32px);
+  letter-spacing: 6px;
+  color: #000;
+  background: var(--pink);
+  padding: 18px 60px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, filter 0.15s;
+  box-shadow: var(--pink-glow);
+}
+
+.buy-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  animation: btn-shine 2.5s ease-in-out infinite;
+}
+@keyframes btn-shine{0%{left:-100%}50%,100%{left:150%}}
+
+.buy-btn:hover{transform:scale(1.05);filter:brightness(1.2)}
+.buy-btn:active{transform:scale(0.97)}
+
+.buy-sub {
+  font-size: 9px;
+  color: rgba(255,45,120,0.4);
+  letter-spacing: 4px;
+  margin-top: 10px;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+}
+
+/* SECTIONS */
+.section {
+  position: relative; z-index: 10;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 20px;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(32px, 6vw, 60px);
+  letter-spacing: 6px;
+  margin-bottom: 8px;
+}
+
+.section-title.pink {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--pink);
+  filter: drop-shadow(0 0 15px var(--pink));
+}
+
+.section-title.cyan {
+  color: var(--cyan);
+  text-shadow: var(--cyan-glow);
+}
+
+.divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pink), var(--cyan), transparent);
+  margin: 8px auto 50px;
+  max-width: 500px;
+  display: block;
+}
+
+/* DESCRIPTION */
+.desc-block {
+  border-left: 3px solid var(--pink);
+  padding: 30px 35px;
+  background: rgba(255,45,120,0.03);
+  border-bottom: 1px solid rgba(255,45,120,0.1);
+  font-size: 15px;
+  line-height: 2.1;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.3px;
+  font-weight: 300;
+  position: relative;
+}
+
+.desc-block p + p { margin-top: 20px; }
+
+.desc-block .highlight {
+  color: var(--pink);
+  font-weight: 700;
+}
+
+.desc-block .highlight-cyan {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+/* QUOTE */
+.scarface-quote {
+  text-align: center;
+  padding: 60px 20px;
+  position: relative;
+  z-index: 10;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.quote-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 5vw, 56px);
+  letter-spacing: 3px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255,45,120,0.3));
+}
+
+.quote-attr {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 5px;
+  margin-top: 16px;
+}
+
+/* TOKENOMICS */
+.tknmx {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(255,45,120,0.1);
+  border: 1px solid rgba(255,45,120,0.15);
+}
+
+.tknmx-item {
+  background: rgba(0,0,0,0.8);
+  padding: 28px 20px;
+  text-align: center;
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.tknmx-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--pink);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+
+.tknmx-item:hover { background: rgba(255,45,120,0.06); }
+.tknmx-item:hover::after { transform: scaleX(1); }
+
+.tknmx-icon { font-size: 26px; margin-bottom: 10px; display: block; }
+
+.tknmx-val {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.tknmx-val.pink { color: var(--pink); text-shadow: var(--pink-glow); }
+.tknmx-val.cyan { color: var(--cyan); text-shadow: var(--cyan-glow); }
+.tknmx-val.green { color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.4); }
+
+.tknmx-lbl {
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* BADGES */
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 40px 0 0;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(0,245,255,0.2);
+  background: rgba(0,245,255,0.03);
+  padding: 10px 20px;
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.badge:hover {
+  border-color: var(--cyan);
+  background: rgba(0,245,255,0.07);
+  box-shadow: var(--cyan-glow);
+}
+
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: var(--cyan-glow);
+  animation: blink 1.5s infinite;
+}
+
+/* HOW TO BUY */
+.steps { display: flex; flex-direction: column; gap: 2px; }
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,45,120,0.1);
+  border-left: 3px solid var(--pink);
+  padding: 22px 28px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, rgba(255,45,120,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.step:hover::before { opacity: 1; }
+.step:hover { border-left-color: var(--cyan); }
+
+.step-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  color: var(--pink);
+  text-shadow: var(--pink-glow);
+  min-width: 50px;
+  text-align: center;
+  line-height: 1;
+}
+
+.step h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--cyan);
+  letter-spacing: 4px;
+  margin-bottom: 5px;
+}
+
+.step p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* FOOTER */
+footer {
+  position: relative; z-index: 10;
+  border-top: 1px solid rgba(255,45,120,0.15);
+  padding: 50px 20px 40px;
+  text-align: center;
+}
+
+.footer-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 10px;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--pink);
+  filter: drop-shadow(0 0 10px var(--pink));
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 20px 0 30px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: rgba(255,45,120,0.5);
+  text-decoration: none;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.footer-links a:hover { color: var(--pink); text-shadow: var(--pink-glow); }
+
+.disclaimer {
+  font-size: 10px;
+  color: rgba(255,255,255,0.12);
+  letter-spacing: 1px;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .tknmx{grid-template-columns:repeat(2,1fr)}
+  .stats{flex-wrap:wrap}
+  .stat{min-width:45%}
+  .step{flex-direction:column;text-align:center}
+  .step-num{min-width:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="trail"></div>
+<div class="scanlines"></div>
+<div class="vhs-noise"></div>
+<canvas id="bg"></canvas>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">◆ $VICE — MIAMI 1980</span>
+    <span class="ticker-item">◆ LIQUIDITY BURNED</span>
+    <span class="ticker-item">◆ CONTRACT RENOUNCED</span>
+    <span class="ticker-item">◆ 0% TAX</span>
+    <span class="ticker-item">◆ NO PRESALE</span>
+    <span class="ticker-item">◆ SOLANA NETWORK</span>
+    <span class="ticker-item">◆ $VICE — MIAMI 1980</span>
+    <span class="ticker-item">◆ LIQUIDITY BURNED</span>
+    <span class="ticker-item">◆ CONTRACT RENOUNCED</span>
+    <span class="ticker-item">◆ 0% TAX</span>
+    <span class="ticker-item">◆ NO PRESALE</span>
+    <span class="ticker-item">◆ SOLANA NETWORK</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="vhs-label">▶ REC &nbsp;&nbsp; MIAMI, FL &nbsp;&nbsp; 1980</div>
+
+  <div class="logo-wrap">
+    <div class="logo-orbit"></div>
+    <div class="logo-orbit-2"></div>
+    <div class="pink-square"></div>
+  </div>
+
+  <div class="main-title">
+    <span class="line1">VICE</span>
+  </div>
+  <span class="dollar">$VICE</span>
+  <div class="year-tag">MIAMI · 1980 · SOLANA</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val cyan"><span class="live-dot"></span>LIVE</div>
+      <div class="stat-lbl">Status</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="mcap">$8,400</div>
+      <div class="stat-lbl">Market Cap</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="holders">103</div>
+      <div class="stat-lbl">Holders</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val cyan">0 / 0</div>
+      <div class="stat-lbl">Tax</div>
+    </div>
+  </div>
+
+  <div class="buy-wrap">
+    <a href="https://pump.fun" class="buy-btn" target="_blank">BUY $VICE</a>
+    <div class="buy-sub">◆ PUMP.FUN · SOLANA NETWORK ◆</div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="scarface-quote">
+  <div class="quote-text">"In this country, you gotta make the money first. Then when you get the money, you get the power."</div>
+  <div class="quote-attr">— TONY MONTANA · SCARFACE · 1983</div>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="section">
+  <div class="section-title pink">Miami 1980</div>
+  <hr class="divider">
+  <div class="desc-block">
+    <p>
+      Before the condos and the art fairs, before South Beach became a postcard, <span class="highlight">Miami was something else entirely.</span> In 1980, the city was the most violent in America — not because of poverty, but because of money. More money than anyone knew what to do with. Colombian cartels were moving product through the Florida Straits at a scale that defied comprehension, and Miami was where it landed.
+    </p>
+    <p>
+      The cocaine trade didn't just fund criminal empires — it <span class="highlight-cyan">rebuilt the city's skyline.</span> Banks that had been hemorrhaging deposits suddenly found themselves drowning in cash. The Federal Reserve branch in Miami was the only one in the country running a surplus — billions of dollars in physical bills flowing through, no questions asked. Real estate that had sat dormant for years was snapped up overnight. Restaurants, nightclubs, car dealerships — all fronts, all laundering, all contributing to a boom that looked, from the outside, like prosperity.
+    </p>
+    <p>
+      The violence was surgical and spectacular in equal measure. The <span class="highlight">Dadeland Mall massacre in 1979</span> — two Colombians gunned down in a liquor store by men with automatic weapons — announced to the world that a new kind of war had come to American soil. The Mariel boatlift the following year brought 125,000 Cubans, including several thousand with criminal records, into a city already stretched thin. The Miami Police Department, outgunned and outspent, could barely keep up.
+    </p>
+    <p>
+      And yet the city <span class="highlight-cyan">pulsed with something electric.</span> The neon was real. The excess was real. The danger was real. Miami in 1980 was America at its most unfiltered — capitalism without guardrails, ambition without apology, consequence without timeline. It was the last place in the country where you could still become anything, or lose everything, in the same weekend.
+    </p>
+    <p>
+      <span class="highlight">$VICE is that era, distilled.</span> No utility. No roadmap. No promises. Just the aesthetic of a moment in American history that was too strange, too violent, and too alive to ever be repeated.
+    </p>
+  </div>
+</div>
+
+<!-- TOKENOMICS -->
+<div class="section" style="padding-top:0">
+  <div class="section-title cyan">Tokenomics</div>
+  <hr class="divider">
+  <div class="tknmx">
+    <div class="tknmx-item">
+      <span class="tknmx-icon">🪙</span>
+      <div class="tknmx-val pink">1,000,000,000</div>
+      <div class="tknmx-lbl">Total Supply</div>
+    </div>
+    <div class="tknmx-item">
+      <span class="tknmx-icon">🔥</span>
+      <div class="tknmx-val green">BURNED</div>
+      <div class="tknmx-lbl">Liquidity</div>
+    </div>
+    <div class="tknmx-item">
+      <span class="tknmx-icon">📜</span>
+      <div class="tknmx-val green">RENOUNCED</div>
+      <div class="tknmx-lbl">Contract</div>
+    </div>
+    <div class="tknmx-item">
+      <span class="tknmx-icon">💰</span>
+      <div class="tknmx-val cyan">0 / 0</div>
+      <div class="tknmx-lbl">Buy / Sell Tax</div>
+    </div>
+    <div class="tknmx-item">
+      <span class="tknmx-icon">🎯</span>
+      <div class="tknmx-val green">NONE</div>
+      <div class="tknmx-lbl">Presale</div>
+    </div>
+    <div class="tknmx-item">
+      <span class="tknmx-icon">🏦</span>
+      <div class="tknmx-val green">NONE</div>
+      <div class="tknmx-lbl">Team Tokens</div>
+    </div>
+  </div>
+
+  <div class="badges">
+    <div class="badge"><div class="badge-dot"></div>Liquidity Burned</div>
+    <div class="badge"><div class="badge-dot"></div>Contract Renounced</div>
+    <div class="badge"><div class="badge-dot"></div>0% Tax</div>
+    <div class="badge"><div class="badge-dot"></div>No Dev Wallet</div>
+    <div class="badge"><div class="badge-dot"></div>Solana Network</div>
+  </div>
+</div>
+
+<!-- HOW TO BUY -->
+<div class="section" style="padding-top:0">
+  <div class="section-title pink">How To Buy</div>
+  <hr class="divider">
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div>
+        <h3>Get A Solana Wallet</h3>
+        <p>Download Phantom or Solflare. Create your wallet and store your seed phrase somewhere safe. Never share it.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div>
+        <h3>Fund With SOL</h3>
+        <p>Buy SOL from Coinbase, Kraken, or Binance. Send it to your Phantom wallet address.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div>
+        <h3>Buy On Pump.fun</h3>
+        <p>Hit the buy button. Connect your wallet and swap SOL for $VICE. Set slippage to 1–3%.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div>
+        <h3>Welcome To Miami</h3>
+        <p>You're in. No promises, no roadmap, no utility. Just the vibe. This is 1980.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL BUY -->
+<div style="position:relative;z-index:10;text-align:center;padding:20px 20px 80px;">
+  <a href="https://pump.fun" class="buy-btn" target="_blank" style="font-size:clamp(22px,4vw,36px)">BUY $VICE NOW</a>
+  <div class="buy-sub" style="margin-top:14px">◆ PUMP.FUN · SOLANA · MIAMI 1980 ◆</div>
+</div>
+
+<footer>
+  <div class="footer-title">$VICE</div>
+  <div class="footer-links">
+    <a href="https://pump.fun" target="_blank">Pump.fun</a>
+    <a href="#">Twitter / X</a>
+    <a href="#">Telegram</a>
+  </div>
+  <div class="disclaimer">
+    $VICE is a meme coin with no intrinsic value or expectation of financial return. This is not financial advice. Cryptocurrency investments are highly speculative and volatile. Never invest more than you can afford to lose. For entertainment purposes only.
+  </div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('trail');
+let mx=0,my=0,cx=0,cy=0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  trail.style.left = mx-2+'px';
+  trail.style.top = my-2+'px';
+});
+
+(function animCursor(){
+  cx += (mx-cx)*0.12;
+  cy += (my-cy)*0.12;
+  cursor.style.left = (cx-10)+'px';
+  cursor.style.top = (cy-10)+'px';
+  requestAnimationFrame(animCursor);
+})();
+
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cursor.style.transform='scale(2)';
+    cursor.style.borderColor='#00F5FF';
+    cursor.style.boxShadow='0 0 20px #00F5FF, 0 0 40px rgba(0,245,255,0.4)';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cursor.style.transform='scale(1)';
+    cursor.style.borderColor='#FF2D78';
+    cursor.style.boxShadow='0 0 20px #FF2D78, 0 0 40px rgba(255,45,120,0.4)';
+  });
+});
+
+// BACKGROUND
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+resize();
+window.addEventListener('resize',resize);
+
+// Grid floor
+const stars = Array.from({length:120},()=>({
+  x: Math.random()*canvas.width,
+  y: Math.random()*canvas.height*0.7,
+  size: Math.random()*1.2+0.2,
+  opacity: Math.random()*0.5+0.1,
+  twinkle: Math.random()*Math.PI*2,
+  color: Math.random()>0.5?'#FF2D78':'#00F5FF'
+}));
+
+let frame=0;
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Deep bg
+  const bg = ctx.createLinearGradient(0,0,0,canvas.height);
+  bg.addColorStop(0,'#06000F');
+  bg.addColorStop(0.5,'#0A0018');
+  bg.addColorStop(1,'#0D0005');
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Horizon glow
+  const horizonY = canvas.height*0.55;
+  const hGrad = ctx.createLinearGradient(0,horizonY-80,0,horizonY+80);
+  hGrad.addColorStop(0,'rgba(0,0,0,0)');
+  hGrad.addColorStop(0.5,'rgba(255,45,120,0.08)');
+  hGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hGrad;
+  ctx.fillRect(0,horizonY-80,canvas.width,160);
+
+  // Synthwave grid
+  ctx.save();
+  ctx.translate(0, horizonY);
+
+  const gridLines = 20;
+  const perspective = 800;
+
+  // Horizontal lines
+  for(let i=0;i<gridLines;i++){
+    const t = i/gridLines;
+    const y = perspective * t / (1 - t * 0.95);
+    if(y > canvas.height*0.6) break;
+    const alpha = t*0.3;
+    ctx.strokeStyle=`rgba(255,45,120,${alpha})`;
+    ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(canvas.width,y);
+    ctx.stroke();
+  }
+
+  // Vertical lines
+  const vLines = 24;
+  for(let i=0;i<=vLines;i++){
+    const x = (i/vLines - 0.5) * canvas.width;
+    const alpha = 0.15 * (1 - Math.abs(i/vLines - 0.5)*1.5);
+    if(alpha < 0) continue;
+    ctx.strokeStyle=`rgba(155,0,255,${alpha})`;
+    ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width/2 + x * 0.1, 0);
+    ctx.lineTo(canvas.width/2 + x * 3, canvas.height*0.5);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Stars
+  stars.forEach(s=>{
+    s.twinkle+=0.015;
+    const op = s.opacity*(0.7+0.3*Math.sin(s.twinkle));
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+    ctx.fillStyle=s.color.replace(')',`,${op})`).replace('rgb','rgba');
+    // Simple fallback
+    ctx.globalAlpha=op;
+    ctx.fillStyle=s.color;
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // Sun/moon orb
+  const sunX = canvas.width/2;
+  const sunY = canvas.height*0.42;
+  const sunR = 60;
+
+  // Sun glow
+  const sunGlow = ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*4);
+  sunGlow.addColorStop(0,'rgba(255,45,120,0.15)');
+  sunGlow.addColorStop(0.5,'rgba(155,0,255,0.05)');
+  sunGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=sunGlow;
+  ctx.fillRect(sunX-sunR*4,sunY-sunR*4,sunR*8,sunR*8);
+
+  // Sun body with horizontal scan lines (Miami Vice style)
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(sunX,sunY,sunR,0,Math.PI*2);
+  ctx.clip();
+
+  const sunGrad = ctx.createLinearGradient(0,sunY-sunR,0,sunY+sunR);
+  sunGrad.addColorStop(0,'#FF2D78');
+  sunGrad.addColorStop(0.4,'#FF6B35');
+  sunGrad.addColorStop(0.7,'#FFE600');
+  sunGrad.addColorStop(1,'#FF2D78');
+  ctx.fillStyle=sunGrad;
+  ctx.fillRect(sunX-sunR,sunY-sunR,sunR*2,sunR*2);
+
+  // Horizontal lines across sun
+  ctx.fillStyle='rgba(6,0,15,1)';
+  for(let i=0;i<8;i++){
+    const lineY = sunY + (i/8)*sunR*2 - sunR*0.2;
+    ctx.fillRect(sunX-sunR,lineY,sunR*2,2);
+  }
+  ctx.restore();
+
+  frame++;
+  requestAnimationFrame(draw);
+}
+draw();
+
+// SCROLL REVEAL
+const revealEls = document.querySelectorAll('.section,.step,.tknmx-item,.badge,.scarface-quote');
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:0.1});
+
+revealEls.forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(25px)';
+  el.style.transition='opacity 0.8s ease, transform 0.8s ease';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
